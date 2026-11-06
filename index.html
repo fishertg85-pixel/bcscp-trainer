@@ -4,22 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BCSCP Exam Trainer</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{margin:0}
-body{font:14px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-img{max-width:100%}
-[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="brand"><span class="dot"></span><strong>BCSCP Exam Trainer</strong></div>
-    <button class="themebtn" id="themeBtn" type="button">Theme</button>
-  </header>
-  <div id="app"></div>
+<div class="topbar">
+  <button class="menubtn" id="menuBtn" type="button" aria-label="Menu">☰</button>
+  <div class="brand"><span class="logo">B</span><span>BCSCP Exam Trainer<small>Focused certification prep</small></span></div>
+  <div class="spacer"></div>
+  <div class="acct"><span id="acctEmail">study mode</span></div>
+  <button class="themebtn" id="themeBtn" type="button">Theme</button>
+</div>
+<div class="backdrop" id="backdrop"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content wide" id="content"></main>
 </div>
 <script src="app.js"></script>
 </body>
