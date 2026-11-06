@@ -2,7 +2,7 @@ function initApp(QUESTIONS){
   "use strict";
   const $ = (s,r=document)=>r.querySelector(s);
   const app = $('#app');
-  const SECS = ['A','B','C','D','E','F'];
+  const SECS = ['A','B','C','D','E','F','G'];
   const SECNAME = {};
   QUESTIONS.forEach(q=>SECNAME[q.sec]=q.secName);
   const LS_KEY = 'csp_trainer_history_v1';
@@ -33,12 +33,12 @@ function initApp(QUESTIONS){
         <div>
           <div class="eyebrow">Board Certified Sterile Compounding Pharmacist</div>
           <h1>Timed practice with fluency analytics</h1>
-          <p class="muted" style="margin:.4rem 0 0">175 items — 150 scenario questions plus 25 NOT / EXCEPT / true-false formats. Answer order is shuffled every run, so you train the reasoning, not the letter. Real exam: 150 items in 3 h 45 m ≈ 90 s/item.</p>
+          <p class="muted" style="margin:.4rem 0 0">221 items — conditional-reasoning questions, NOT / EXCEPT and true-false formats, plus 10 multi-question clinical vignettes (the scenario stays pinned above each of its questions). Answer order shuffles every run. Real exam: 150 items in 3 h 45 m ≈ 90 s/item.</p>
         </div>
         <div class="field">
           <label>What to run</label>
           <div class="chips" id="modeChips">
-            <button class="chip" data-mode="all" aria-pressed="true" type="button">Full set (175)</button>
+            <button class="chip" data-mode="all" aria-pressed="true" type="button">Full set (221)</button>
             <button class="chip" data-mode="random30" aria-pressed="false" type="button">Random 30</button>
             <button class="chip" data-mode="sections" aria-pressed="false" type="button">Pick sections</button>
           </div>
@@ -87,13 +87,18 @@ function initApp(QUESTIONS){
       const target=Math.max(15,Math.min(300,parseInt($('#paceIn').value)||90));
       let pool=[];
       if(mode==='all') pool=QUESTIONS.slice();
-      else if(mode==='random30') pool=shuffle(QUESTIONS.slice()).slice(0,30);
-      else { const secs=chosenSecs.size?chosenSecs:new Set(SECS); pool=QUESTIONS.filter(q=>secs.has(q.sec)); }
-      if(mode!=='all') pool=shuffle(pool);
+      else if(mode==='random30') pool=shuffleGroups(QUESTIONS.slice()).slice(0,30);
+      else { const secs=chosenSecs.size?chosenSecs:new Set(SECS); pool=shuffleGroups(QUESTIONS.filter(q=>secs.has(q.sec))); }
       startQuiz(pool,fb,target,mode);
     };
   }
   function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function shuffleGroups(items){
+    const groups={},order=[];
+    items.forEach(q=>{const k=q.scenarioId||('solo'+q.n); if(!groups[k]){groups[k]=[];order.push(k);} groups[k].push(q);});
+    order.forEach(k=>groups[k].sort((a,b)=>a.n-b.n));
+    const out=[]; shuffle(order.slice()).forEach(k=>groups[k].forEach(q=>out.push(q))); return out;
+  }
 
   // ---- quiz runner ----
   function startQuiz(pool,fb,target,mode){
@@ -117,6 +122,7 @@ function initApp(QUESTIONS){
       </div>
       <div class="progress"><i style="width:${(done/nTot*100)}%"></i></div>
       <div class="card qcard">
+        ${q.scenario?`<div class="scenario"><span class="eyebrow">${esc(q.scenarioTitle||'Scenario')}</span><p>${esc(q.scenario)}</p></div>`:''}
         <div class="qmeta">
           <span class="tag sec">${q.sec} · ${q.secName}</span>
           <span class="tag">${q.topic}</span>
@@ -165,6 +171,7 @@ function initApp(QUESTIONS){
   function record(k){
     const q=S.pool[S.idx];
     S.records.push({n:q.n,sec:q.sec,secName:q.secName,topic:q.topic,stem:q.stem,opts:{...S.curOpts},
+      scenario:q.scenario||'',scenarioTitle:q.scenarioTitle||'',
       correctKey:S.curCorrect,rationale:q.rationale,answer:k,correct:k===S.curCorrect,
       timeMs:Date.now()-S.qStart});
     S.answered=true;
@@ -299,7 +306,7 @@ function initApp(QUESTIONS){
         const res=r.answer==null?'<span class="res no">skip</span>':r.correct?'<span class="res ok">✓</span>':'<span class="res no">✗</span>';
         const flag=r.slow?' <span class="flag" title="slower than target">⚠</span>':'';
         return `<tr data-n="${r.n}"><td class="c">${r.n}</td><td class="c">${r.sec}</td><td>${esc(r.topic)}</td><td class="c">${r.answer||'—'}</td><td class="c">${r.correctKey}</td><td>${res}${flag}</td><td class="c">${(r.timeMs/1000).toFixed(0)}s</td></tr>`+
-          `<tr class="exp" data-exp="${r.n}" hidden><td colspan="7">${esc(r.stem)}<br><strong>${r.correctKey}.</strong> ${esc(r.opts[r.correctKey]||'')} — ${esc(r.rationale)}</td></tr>`;
+          `<tr class="exp" data-exp="${r.n}" hidden><td colspan="7">${r.scenario?('<em>'+esc(r.scenario)+'</em><br>'):''}${esc(r.stem)}<br><strong>${r.correctKey}.</strong> ${esc(r.opts[r.correctKey]||'')} — ${esc(r.rationale)}</td></tr>`;
       }).join('');
       tbody.querySelectorAll('tr[data-n]').forEach(tr=>tr.onclick=()=>{const ex=tbody.querySelector('tr[data-exp="'+tr.dataset.n+'"]');if(ex)ex.hidden=!ex.hidden;});
     }
