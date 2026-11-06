@@ -12,11 +12,10 @@ function initApp(QUESTIONS){
   // ---- theme ----
   function initTheme(){
     let t=null; try{t=localStorage.getItem('csp_theme');}catch(e){}
-    if(t) document.documentElement.setAttribute('data-theme',t);
+    document.documentElement.setAttribute('data-theme', t==='light'?'light':'dark');
     $('#themeBtn').onclick=()=>{
-      const cur=document.documentElement.getAttribute('data-theme');
-      const sysDark=matchMedia('(prefers-color-scheme:dark)').matches;
-      const next = cur ? (cur==='dark'?'light':'dark') : (sysDark?'light':'dark');
+      const cur=document.documentElement.getAttribute('data-theme')||'dark';
+      const next=cur==='light'?'dark':'light';
       document.documentElement.setAttribute('data-theme',next);
       try{localStorage.setItem('csp_theme',next);}catch(e){}
     };
@@ -27,7 +26,7 @@ function initApp(QUESTIONS){
 
   // ---- config screen ----
   function configScreen(){
-    const secChips = SECS.map(s=>`<button class="chip" data-sec="${s}" aria-pressed="false" type="button">${s} · ${SECNAME[s]}</button>`).join('');
+    const secChips = SECS.map(s=>`<button class="chip" data-sec="${s}" aria-pressed="false" type="button"><span class="secdot" style="background:var(--c-${s.toLowerCase()})"></span>${s} · ${SECNAME[s]}</button>`).join('');
     app.innerHTML = `
       <div class="card config">
         <div>
@@ -124,7 +123,7 @@ function initApp(QUESTIONS){
       <div class="card qcard">
         ${q.scenario?`<div class="scenario"><span class="eyebrow">${esc(q.scenarioTitle||'Scenario')}</span><p>${rich(q.scenario)}</p></div>`:''}
         <div class="qmeta">
-          <span class="tag sec">${q.sec} · ${q.secName}</span>
+          <span class="tag sec-${q.sec}">${q.sec} · ${esc(q.secName)}</span>
           <span class="tag">${q.topic}</span>
         </div>
         <div class="stem">${rich(q.stem)}</div>
@@ -380,5 +379,5 @@ function initApp(QUESTIONS){
 (function(){
   if (window.QUESTIONS) return initApp(window.QUESTIONS);
   fetch('questions.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(initApp)
-    .catch(function(){var a=document.getElementById('app'); if(a)a.innerHTML='<p style="padding:20px">Could not load questions.json — serve this folder over http (GitHub Pages or a local server), not file://.</p>';});
+    .catch(function(){var a=document.getElementById('app'); if(a)a.innerHTML='<p style="padding:20px">Could not load questions.json — serve over http.</p>';});
 })();
