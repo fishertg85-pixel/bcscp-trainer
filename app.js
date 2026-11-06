@@ -55,9 +55,9 @@ function initApp(QUESTIONS){
   "use strict";
   const $=(s,r=document)=>r.querySelector(s);
   const content=$('#content'), sidebar=$('#sidebar');
-  const SECS=['A','B','C','D','E','F','G','H','I','J','K','L'];
+  const SECS=['A','B','C','D','E','F','G','H','I','J','K','L','M'];
   const SECNAME={}; QUESTIONS.forEach(q=>SECNAME[q.sec]=q.secName);
-  const DOMAIN={A:1,B:1,C:1,D:1,E:1,F:1,G:1,H:3,I:3,J:2,K:3,L:1};
+  const DOMAIN={A:1,B:1,C:1,D:1,E:1,F:1,G:1,H:3,I:3,J:2,K:3,L:1,M:1};
   const DOMNAME={1:'Domain 1 — Compounded Sterile Preparations',2:'Domain 2 — Therapeutics',3:'Domain 3 — Professional Practice'};
   const LS_KEY='csp_trainer_history_v1';
   const fmt=ms=>{const s=Math.max(0,Math.round(ms/1000));const m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
