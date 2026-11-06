@@ -2,7 +2,7 @@ function initApp(QUESTIONS){
   "use strict";
   const $ = (s,r=document)=>r.querySelector(s);
   const app = $('#app');
-  const SECS = ['A','B','C','D','E','F','G'];
+  const SECS = ['A','B','C','D','E','F','G','H','I'];
   const SECNAME = {};
   QUESTIONS.forEach(q=>SECNAME[q.sec]=q.secName);
   const LS_KEY = 'csp_trainer_history_v1';
