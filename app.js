@@ -282,6 +282,10 @@ function initApp(QUESTIONS){
     const slowT=Math.max(S.target*1000,median*1.5);
     recs.forEach(r=>{r.slow=r.answer!=null&&r.timeMs>slowT;r.shaky=r.correct&&r.slow;});
     const pct=Math.round(correct/recs.length*100);const onPace=avgS<=S.target;
+    const wrong=answered.filter(r=>!r.correct).length;const skip=recs.length-answered.length;
+    const donut=(c,w,s)=>{const tot=c+w+s||1,C=2*Math.PI*54;let off=0,arcs='';[['var(--good)',c],['var(--bad)',w],['var(--warn)',s]].forEach(([col,val])=>{const len=val/tot*C;arcs+=`<circle cx="80" cy="80" r="54" fill="none" style="stroke:${col}" stroke-width="22" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 80 80)"></circle>`;off+=len;});return `<svg viewBox="0 0 160 160" width="180" height="180" role="img" aria-label="Performance breakdown: ${c} correct, ${w} incorrect, ${s} skipped"><circle cx="80" cy="80" r="54" fill="none" style="stroke:var(--surface-2)" stroke-width="22"></circle>${arcs}<text x="80" y="78" text-anchor="middle" style="fill:var(--fg);font-family:var(--mono);font-weight:600;font-size:26px">${Math.round(c/tot*100)}%</text><text x="80" y="98" text-anchor="middle" style="fill:var(--muted);font-size:10px;letter-spacing:1px">CORRECT</text></svg>`;};
+    const bars=(c,w,s)=>{const data=[['Correct',c,'var(--good)'],['Incorrect',w,'var(--bad)'],['Skipped',s,'var(--warn)']],max=Math.max(1,c,w,s),W=300,H=190,pad=30,bw=54,gap=38,base=H-pad;let b='';data.forEach((d,i)=>{const x=pad+i*(bw+gap),h=(d[1]/max)*(base-24),y=base-h;b+=`<rect x="${x}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="4" style="fill:${d[2]}"></rect><text x="${x+bw/2}" y="${base+17}" text-anchor="middle" style="fill:var(--muted);font-size:11px">${d[0]}</text><text x="${x+bw/2}" y="${(y-7).toFixed(1)}" text-anchor="middle" style="fill:var(--fg);font-family:var(--mono);font-size:13px;font-weight:600">${d[1]}</text>`;});return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="200" role="img" aria-label="Answer distribution"><line x1="${pad}" y1="${base}" x2="${W-12}" y2="${base}" style="stroke:var(--line)"></line>${b}</svg>`;};
+    const legend='<span class="chip" style="cursor:default"><span class="secdot" style="background:var(--good)"></span>Correct</span><span class="chip" style="cursor:default"><span class="secdot" style="background:var(--bad)"></span>Incorrect</span><span class="chip" style="cursor:default"><span class="secdot" style="background:var(--warn)"></span>Skipped</span>';
     // by section & domain
     const bySec={},byDom={1:{t:0,ok:0},2:{t:0,ok:0},3:{t:0,ok:0}};
     recs.forEach(r=>{(bySec[r.sec]=bySec[r.sec]||{tot:0,ok:0}).tot++;if(r.correct)bySec[r.sec].ok++;const d=DOMAIN[r.sec]||1;byDom[d].t++;if(r.correct)byDom[d].ok++;});
@@ -292,13 +296,23 @@ function initApp(QUESTIONS){
     let band,vcls;if(pct>=75){band='On track to pass';vcls='good';}else if(pct>=68){band='Borderline — close';vcls='warn';}else{band='Not yet — keep drilling';vcls='bad';}
     const scaled=Math.round(300+pct*2.9); // rough, labeled
     active='analytics';renderNav();content.classList.add('wide');
-    content.innerHTML=`<div class="viewhead"><h1>${S.exam?'Exam simulation — results':'Session results'}</h1></div>
+    content.innerHTML=`<div class="viewhead" style="text-align:center"><h1>${S.exam?'Exam complete':'Quiz complete'}</h1><p class="muted">Review your performance and keep improving.</p></div>
       ${S.exam?`<div class="verdict ${vcls}" style="margin-bottom:16px">${band} · ${pct}% correct · rough scaled estimate ~${scaled} (passing ≈ 500; estimate only)</div>`:''}
+      <div class="tiles" style="margin-bottom:14px">
+        <div class="card tile ${pct>=75?'good':pct>=60?'warn':'bad'}"><div class="k">Final score</div><div class="v">${pct}%</div></div>
+        <div class="card tile"><div class="k">Questions answered</div><div class="v">${answered.length}</div></div>
+        <div class="card tile good"><div class="k">Correct</div><div class="v">${correct}</div></div>
+        <div class="card tile bad"><div class="k">Incorrect</div><div class="v">${wrong}</div></div>
+      </div>
       <div class="tiles" style="margin-bottom:18px">
-        <div class="card tile ${pct>=75?'good':pct>=60?'warn':'bad'}"><div class="k">Score</div><div class="v">${pct}%</div><div class="s">${correct} / ${recs.length}</div></div>
-        <div class="card tile ${onPace?'good':'bad'}"><div class="k">Avg / question</div><div class="v">${avgS.toFixed(0)}s</div><div class="s">target ${S.target}s</div></div>
-        <div class="card tile"><div class="k">Total time</div><div class="v">${fmt(totalMs)}</div></div>
-        <div class="card tile ${onPace?'good':'bad'}"><div class="k">Pace</div><div class="v" style="font-size:1.1rem">${onPace?'On pace':'Too slow'}</div><div class="s">150-item ≈ ${fmtH(avgS*150*1000)}</div></div>
+        <div class="card tile ${onPace?'good':'bad'}"><div class="k">Avg / question</div><div class="v" style="font-size:1.25rem">${avgS.toFixed(0)}s</div><div class="s">target ${S.target}s</div></div>
+        <div class="card tile"><div class="k">Total time</div><div class="v" style="font-size:1.25rem">${fmt(totalMs)}</div></div>
+        <div class="card tile ${onPace?'good':'bad'}"><div class="k">Pace</div><div class="v" style="font-size:1.1rem">${onPace?'On pace':'Too slow'}</div><div class="s">150 ≈ ${fmtH(avgS*150*1000)}</div></div>
+        <div class="card tile warn"><div class="k">Skipped</div><div class="v" style="font-size:1.25rem">${skip}</div></div>
+      </div>
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card panel"><h2>Performance breakdown</h2><div style="display:flex;justify-content:center;padding:8px 0">${donut(correct,wrong,skip)}</div><div class="chips" style="justify-content:center">${legend}</div></div>
+        <div class="card panel"><h2>Answer distribution</h2><div style="padding-top:6px">${bars(correct,wrong,skip)}</div></div>
       </div>
       <div class="grid2">
         <div class="card panel"><h2>By domain</h2><div class="sub">Weighted 60 / 15 / 25 on the real exam.</div>${[1,2,3].map(d=>{const b=byDom[d];if(!b.t)return '';const p=Math.round(b.ok/b.t*100);return `<div class="bar-row"><div class="bar-label">${DOMNAME[d]} <small>&nbsp;${b.ok}/${b.t}</small><div class="bar"><i style="width:${p}%;background:${p>=75?'var(--good)':p>=60?'var(--warn)':'var(--bad)'}"></i></div></div><div class="bar-val">${p}%</div></div>`;}).join('')}</div>
