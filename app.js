@@ -122,14 +122,14 @@ function initApp(QUESTIONS){
       </div>
       <div class="progress"><i style="width:${(done/nTot*100)}%"></i></div>
       <div class="card qcard">
-        ${q.scenario?`<div class="scenario"><span class="eyebrow">${esc(q.scenarioTitle||'Scenario')}</span><p>${esc(q.scenario)}</p></div>`:''}
+        ${q.scenario?`<div class="scenario"><span class="eyebrow">${esc(q.scenarioTitle||'Scenario')}</span><p>${rich(q.scenario)}</p></div>`:''}
         <div class="qmeta">
           <span class="tag sec">${q.sec} · ${q.secName}</span>
           <span class="tag">${q.topic}</span>
         </div>
-        <div class="stem">${esc(q.stem)}</div>
+        <div class="stem">${rich(q.stem)}</div>
         <div class="opts" id="opts">
-          ${Object.keys(S.curOpts).map(k=>`<button class="opt" data-k="${k}" type="button"><span class="key">${k}</span><span>${esc(S.curOpts[k])}</span></button>`).join('')}
+          ${Object.keys(S.curOpts).map(k=>`<button class="opt" data-k="${k}" type="button"><span class="key">${k}</span><span>${rich(S.curOpts[k])}</span></button>`).join('')}
         </div>
         <div id="fbBox"></div>
         <div class="runfoot">
@@ -162,7 +162,7 @@ function initApp(QUESTIONS){
         if(o.dataset.k===S.curCorrect)o.classList.add('correct');
         if(o.dataset.k===k && !correct)o.classList.add('wrong');
       });
-      $('#fbBox').innerHTML=`<div class="feedback ${correct?'ok':'no'}"><strong>${correct?'Correct.':'Not quite — answer is '+S.curCorrect+'.'}</strong> ${esc(q.rationale)}</div>`;
+      $('#fbBox').innerHTML=`<div class="feedback ${correct?'ok':'no'}"><strong>${correct?'Correct.':'Not quite — answer is '+S.curCorrect+'.'}</strong> ${rich(q.rationale)}</div>`;
       $('#nextBtn').disabled=false;
     } else {
       S.pendingAnswer=k; $('#nextBtn').disabled=false;
@@ -249,7 +249,7 @@ function initApp(QUESTIONS){
     const secRows=SECS.filter(s=>d.bySec[s]).map(s=>{const b=d.bySec[s];const p=Math.round(b.ok/b.tot*100);const at=b.ans?(b.t/b.ans/1000):0;
       return `<div class="bar-row"><div class="bar-label">${b.sec} · ${esc(b.name)} <small>&nbsp;${b.ok}/${b.tot} · ${at.toFixed(0)}s avg</small><div class="bar"><i style="width:${p}%;background:${barColor(p)}"></i></div></div><div class="bar-val">${p}%</div></div>`;}).join('');
     const topicsHtml = d.topics.length ? d.topics.map((t,i)=>{
-      const col=i<2?'var(--bad)':i<4?'var(--warn)':'var(--accent)';
+      const col=i<2?'var(--bad)':i<4?'var(--warn)':'var(--slate)';
       return `<div class="review-item"><div class="pri" style="background:${col}">${i+1}</div><div class="body"><div class="t">${esc(t.topic)} <span class="muted" style="font-weight:400">· ${t.wrong} wrong${t.shaky?', '+t.shaky+' slow-but-right':''}</span></div><div class="d">${esc(reviewHint(t.topic))}</div></div></div>`;
     }).join('') : `<p class="muted">Nothing flagged — clean run. Tighten pace next time.</p>`;
 
@@ -306,7 +306,7 @@ function initApp(QUESTIONS){
         const res=r.answer==null?'<span class="res no">skip</span>':r.correct?'<span class="res ok">✓</span>':'<span class="res no">✗</span>';
         const flag=r.slow?' <span class="flag" title="slower than target">⚠</span>':'';
         return `<tr data-n="${r.n}"><td class="c">${r.n}</td><td class="c">${r.sec}</td><td>${esc(r.topic)}</td><td class="c">${r.answer||'—'}</td><td class="c">${r.correctKey}</td><td>${res}${flag}</td><td class="c">${(r.timeMs/1000).toFixed(0)}s</td></tr>`+
-          `<tr class="exp" data-exp="${r.n}" hidden><td colspan="7">${r.scenario?('<em>'+esc(r.scenario)+'</em><br>'):''}${esc(r.stem)}<br><strong>${r.correctKey}.</strong> ${esc(r.opts[r.correctKey]||'')} — ${esc(r.rationale)}</td></tr>`;
+          `<tr class="exp" data-exp="${r.n}" hidden><td colspan="7">${r.scenario?('<em>'+rich(r.scenario)+'</em><br>'):''}${rich(r.stem)}<br><strong>${r.correctKey}.</strong> ${rich(r.opts[r.correctKey]||'')} — ${rich(r.rationale)}</td></tr>`;
       }).join('');
       tbody.querySelectorAll('tr[data-n]').forEach(tr=>tr.onclick=()=>{const ex=tbody.querySelector('tr[data-exp="'+tr.dataset.n+'"]');if(ex)ex.hidden=!ex.hidden;});
     }
@@ -371,6 +371,7 @@ function initApp(QUESTIONS){
   }
 
   function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+  function rich(s){return esc(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');}
 
   initTheme();
   configScreen();
