@@ -50,7 +50,99 @@ const FLASHCARDS = [
  ["Midline — central or peripheral?","Peripheral (tip at axilla)"],
  ["Port access needle","Non-coring Huber needle"],
 ];
+// ---------- FILL-IN TABLE DRILLS ----------
+// answer columns (indices in `ans`) are typed by the user. A cell is a string,
+// or {a:'canonical', alts:[...], fuzzy:true} for lenient text grading.
+const TABLES = [
+ {id:'isoladder', title:'ISO particle ladder', wide:false,
+  note:'Max particles ≥0.5 µm per cubic meter (ISO 14644-1). Each step up in ISO class is ×10 dirtier — the "352 → 3,520 → 35,200…" ladder.',
+  cols:['ISO class','Max particles ≥0.5 µm / m³'], ans:[1],
+  rows:[['ISO 4',{a:'352',alts:['352']}],['ISO 5','3,520'],['ISO 6','35,200'],['ISO 7','352,000'],['ISO 8','3,520,000']]},
 
+ {id:'isoloc', title:'ISO class by cleanroom location', wide:false,
+  note:'Which ISO class each compounding space must meet, and its particle limit. (The PEC is the hood; the buffer and ante rooms are the surrounding cleanroom.)',
+  cols:['Location','Required ISO class','Particles ≥0.5 µm / m³'], ans:[1,2],
+  rows:[
+   ['Inside the PEC / DCA (the hood)',{a:'ISO 5',alts:['5','iso5','class 5']},'3,520'],
+   ['Buffer room',{a:'ISO 7',alts:['7','iso7','class 7']},'352,000'],
+   ['Ante room',{a:'ISO 8',alts:['8','iso8','class 8']},'3,520,000']]},
+
+ {id:'actionlevels', title:'Microbial action levels (USP <797> 2023)', wide:false,
+  note:'Action level = investigate/CAPA if a result EXCEEDS it. Enter the numeric threshold for each.',
+  cols:['Classification','Active-air action (cfu/m³)','Surface action (cfu/device)'], ans:[1,2],
+  rows:[
+   ['ISO 5','1','3'],
+   ['ISO 7','10','5'],
+   ['ISO 8','100','50']]},
+
+ {id:'emaction', title:'Gloved-fingertip action levels', wide:false,
+  note:'GFT total cfu (both hands) above which the result is an excursion.',
+  cols:['When','Action level (total cfu, both hands)'], ans:[1],
+  rows:[
+   ['Initial garbing competency (after garbing, before media-fill)','0'],
+   ['After each media-fill test','3']]},
+
+ {id:'isolate', title:'Environmental isolate — expected or objectionable?', wide:false,
+  note:'Type "common" (normal skin/environmental flora) or "objectionable" (triggers RCA/CAPA regardless of count). Gram-negative rods — including coliforms — are objectionable even at 1 cfu.',
+  cols:['Organism recovered','common / objectionable'], ans:[1],
+  rows:[
+   ['Coagulase-negative staph / Micrococcus (skin)',{a:'common',alts:['normal','expected','skin','run of the mill','ok'],fuzzy:true}],
+   ['Diphtheroids (Corynebacterium, skin)',{a:'common',alts:['normal','expected','skin'],fuzzy:true}],
+   ['Bacillus spp. (aerobic spore-former, environmental)',{a:'common',alts:['normal','expected','environmental'],fuzzy:true}],
+   ['Gram-negative rods (e.g., Pseudomonas)',{a:'objectionable',alts:['significant','investigate','alarming','rca','not normal'],fuzzy:true}],
+   ['Coliforms (gram-negative, fecal/water indicator)',{a:'objectionable',alts:['significant','investigate','alarming','rca'],fuzzy:true}],
+   ['Mold / fungi',{a:'objectionable',alts:['significant','investigate','alarming','rca'],fuzzy:true}]]},
+
+ {id:'bud1', title:'USP <797> Category 1 BUD', wide:false,
+  note:'CSP made in an SCA (segregated compounding area). Enter the maximum BUD.',
+  cols:['Storage','Max BUD (hours)'], ans:[1],
+  rows:[['Controlled room temperature','12'],['Refrigerator (2–8°C)','24']]},
+
+ {id:'bud2', title:'USP <797> Category 2 BUD (days)', wide:true,
+  note:'Category 2 CSP (made in a classified cleanroom). All values in DAYS. "Tested" = passed sterility testing.',
+  cols:['Preparation','Room temp','Refrigerator','Freezer'], ans:[1,2,3],
+  rows:[
+   ['Aseptic, all sterile components, NOT tested','4','10','45'],
+   ['Aseptic, ≥1 nonsterile component, NOT tested','1','4','45'],
+   ['Terminally sterilized, NOT tested','14','28','45'],
+   ['Aseptic, sterility tested & passing','30','45','60'],
+   ['Terminally sterilized, tested & passing','45','60','90']]},
+
+ {id:'bud3', title:'USP <797> Category 3 BUD (days)', wide:true,
+  note:'Category 3 requires passing sterility + endotoxin testing and stricter garb/qualification. All values in DAYS.',
+  cols:['Preparation','Room temp','Refrigerator','Freezer'], ans:[1,2,3],
+  rows:[
+   ['Aseptically processed, tested','60','90','120'],
+   ['Terminally sterilized, tested','90','120','180']]},
+
+ {id:'sterheat', title:'Sterilization — temperature, pressure & time', wide:true,
+  note:'Core terminal-sterilization parameters. Enter temperature (°C), pressure, and exposure time.',
+  cols:['Method','Temp (°C)','Pressure','Time'], ans:[1,2,3],
+  rows:[
+   ['Steam / moist heat (autoclave)','121',{a:'15 psi',alts:['15','15psig','15 psig','~15'],fuzzy:true},{a:'15 min',alts:['15','15-30','1530','15 to 30','20','30'],fuzzy:true}],
+   ['Dry heat — sterilization','160',{a:'none',alts:['na','n/a','ambient','atmospheric','0','—'],fuzzy:true},{a:'120 min',alts:['120','2 h','2h','2 hr','120min'],fuzzy:true}],
+   ['Dry heat — depyrogenation','250',{a:'none',alts:['na','n/a','ambient','atmospheric','0','—'],fuzzy:true},{a:'30 min',alts:['30','30min'],fuzzy:true}]]},
+
+ {id:'emmethod', title:'Environmental monitoring — method / medium', wide:true,
+  note:'The preferred test or growth medium for each purpose. (TSA = trypticase soy agar = soybean–casein digest.)',
+  cols:['Purpose','Preferred method / medium'], ans:[1],
+  rows:[
+   ['Non-viable particle count (ISO classification)',{a:'electronic particle counter',alts:['particle counter','laser particle counter'],fuzzy:true}],
+   ['Viable air sampling — collection principle',{a:'impaction (volumetric active air sampler)',alts:['impaction','active air sampler','volumetric'],fuzzy:true}],
+   ['General growth medium (bacteria + fungi)',{a:'TSA (trypticase soy agar)',alts:['tsa','trypticase soy agar','soybean casein digest','scda'],fuzzy:true}],
+   ['Fungal-selective medium (if used)',{a:'Sabouraud dextrose agar',alts:['sabouraud','sda','malt extract agar'],fuzzy:true}],
+   ['Surface sampling device',{a:'contact / RODAC plate (with neutralizers)',alts:['contact plate','rodac','contact plate with neutralizer'],fuzzy:true}]]},
+
+ {id:'stermatch', title:'Sterilization method → application', wide:true,
+  note:'Match the correct sterilization method to each situation.',
+  cols:['Situation','Method'], ans:[1],
+  rows:[
+   ['Heat-stable aqueous solution in final container',{a:'steam (autoclave)',alts:['steam','moist heat','autoclave'],fuzzy:true}],
+   ['Heat-labile solution / biologic',{a:'sterile filtration (0.22 µm)',alts:['filtration','filter','0.22','sterilizing filter'],fuzzy:true}],
+   ['Heat-stable powder, oil, or glassware',{a:'dry heat',alts:['dry heat sterilization','hot air oven'],fuzzy:true}],
+   ['Remove endotoxin from glassware',{a:'dry heat depyrogenation (≥250°C)',alts:['depyrogenation','dry heat','250'],fuzzy:true}],
+   ['Pre-packaged heat-sensitive medical devices (mfr)',{a:'ethylene oxide (EtO) gas or gamma irradiation',alts:['eto','ethylene oxide','gamma','irradiation'],fuzzy:true}]]},
+];
 function initApp(QUESTIONS){
   "use strict";
   const $=(s,r=document)=>r.querySelector(s);
@@ -94,7 +186,7 @@ function initApp(QUESTIONS){
     {id:'home',label:'Home',ic:'H'},
     {id:'practice',label:'Practice',ic:'Q',sub:[
       {id:'quick',label:'Quick session'},{id:'examsim',label:'Exam simulation'},
-      {id:'bydomain',label:'By domain'},{id:'flashcards',label:'Flashcards'}]},
+      {id:'bydomain',label:'By domain'},{id:'flashcards',label:'Flashcards'},{id:'tables',label:'Fill-in tables'}]},
     {id:'analytics',label:'Analytics',ic:'A'},
     {id:'profile',label:'Profile',ic:'P'},
   ];
@@ -120,6 +212,7 @@ function initApp(QUESTIONS){
     if(v==='examsim')return viewExamSim();
     if(v==='bydomain')return viewByDomain();
     if(v==='flashcards')return viewFlashHome();
+    if(v==='tables')return viewTablesHome();
     if(v==='analytics')return viewAnalytics();
     if(v==='profile')return viewProfile();
     viewHome();
@@ -408,11 +501,85 @@ function initApp(QUESTIONS){
     render();
   }
 
+  // ---------- FILL-IN TABLES ----------
+  function normA(s){let x=String(s==null?'':s).toLowerCase()
+    .replace(/approximately|approx\.?|about/g,'')
+    .replace(/[≥≤~]|>=|<=/g,'').replace(/°|º/g,'')
+    .replace(/[\s,]+/g,'');
+    x=x.replace(/(minutes?|mins?|hours?|hrs?|psig?|seconds?|secs?|days?)$/,'');
+    x=x.replace(/(\d)(h|d)$/,'$1');
+    return x.trim();}
+  function cellAns(v){return (v&&typeof v==='object')?v:{a:v};}
+  function cellOK(input,v){
+    const c=cellAns(v);const u=normA(input);if(!u)return false;
+    const set=[c.a].concat(c.alts||[]).map(normA);
+    if(set.includes(u))return true;
+    if(c.fuzzy)return set.some(a=>a.length>=3&&u.length>=3&&(a.includes(u)||u.includes(a)));
+    return false;}
+  function viewTablesHome(){
+    active='tables';renderNav();content.classList.remove('wide');
+    content.innerHTML=`<div class="viewhead"><h1>Fill-in tables</h1><p class="muted">Type the values from memory — ISO limits, BUDs, action levels, sterilization parameters. Check grades each cell, and the correct value shows on anything you miss.</p></div>
+      <div class="tablelist">`+TABLES.map(t=>`<button class="card panel tablecard" type="button" data-t="${t.id}">
+        <div class="tc-title">${esc(t.title)}</div>
+        <div class="tc-note muted">${esc(t.note)}</div>
+        <div class="tc-meta mono">${t.rows.length} rows · ${t.ans.length} blank column${t.ans.length>1?'s':''}</div></button>`).join('')+`</div>`;
+    content.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startTable(TABLES.find(x=>x.id===b.dataset.t)));
+  }
+  function startTable(t){
+    content.classList.toggle('wide',!!t.wide);
+    const order=shuffle(t.rows.map((_,i)=>i));
+    let graded=false;
+    const head=t.cols.map((c,i)=>`<th${t.ans.includes(i)?' class="ac"':''}>${esc(c)}</th>`).join('');
+    const body=order.map(ri=>{
+      const row=t.rows[ri];
+      const tds=row.map((cell,ci)=>{
+        if(!t.ans.includes(ci))return `<td class="clue">${rich(String(cell&&typeof cell==='object'?cell.a:cell))}</td>`;
+        return `<td><input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" data-r="${ri}" data-c="${ci}" aria-label="${esc(t.cols[ci])}"></td>`;
+      }).join('');
+      return `<tr>${tds}</tr>`;
+    }).join('');
+    content.innerHTML=`<div class="viewhead"><h1>${esc(t.title)}</h1><p class="muted">${esc(t.note)}</p></div>
+      <div class="card panel">
+        <div class="dtable-wrap"><table class="dtable"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>
+        <div class="row" style="margin-top:14px;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="checkBtn" type="button">Check</button>
+          <button class="btn sec" id="revealBtn" type="button">Reveal answers</button>
+          <button class="btn sec" id="retryBtn" type="button">Shuffle &amp; retry</button>
+          <button class="btn ghost" id="backBtn" type="button">All tables</button>
+          <span id="tscore" class="mono" style="margin-left:auto;font-weight:600"></span>
+        </div>
+      </div>`;
+    const inputs=()=>Array.from(content.querySelectorAll('.dtable input'));
+    const cellOf=inp=>t.rows[+inp.dataset.r][+inp.dataset.c];
+    $('#backBtn').onclick=()=>go('tables');
+    $('#retryBtn').onclick=()=>startTable(t);
+    $('#checkBtn').onclick=()=>{
+      let tot=0,right=0;
+      inputs().forEach(inp=>{
+        tot++;const ok=cellOK(inp.value,cellOf(inp));if(ok)right++;
+        inp.classList.toggle('ok',ok);inp.classList.toggle('no',!ok);
+        const old=inp.parentNode.querySelector('.corr');if(old)old.remove();
+        if(!ok){const s=document.createElement('span');s.className='corr';s.textContent='→ '+cellAns(cellOf(inp)).a;inp.parentNode.appendChild(s);}
+      });
+      const pct=tot?Math.round(right/tot*100):0;
+      const el=$('#tscore');el.textContent=right+' / '+tot+'  ('+pct+'%)';
+      el.style.color=pct>=80?'var(--good)':(pct>=50?'var(--warn)':'var(--bad)');
+      if(!graded){graded=true;saveAttempt({date:new Date().toISOString(),mode:'tables',n:tot,pct:pct,correct:right,avgS:0,target:t.title});renderNav();}
+    };
+    $('#revealBtn').onclick=()=>{
+      inputs().forEach(inp=>{const c=cellAns(cellOf(inp));inp.value=c.a;inp.classList.add('ok');inp.classList.remove('no');const old=inp.parentNode.querySelector('.corr');if(old)old.remove();});
+      const el=$('#tscore');el.textContent='Answers shown';el.style.color='var(--muted)';
+    };
+    const ins=inputs();
+    ins.forEach((inp,i)=>inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(i+1<ins.length)ins[i+1].focus();else $('#checkBtn').click();}}));
+    if(ins[0])ins[0].focus();
+  }
+
   // ---------- ANALYTICS ----------
   function viewAnalytics(){
     active='analytics';renderNav();content.classList.add('wide');
     const h=loadHistory();const all=h.slice().reverse();
-    const modeLabel={quick:'Quick',examsim:'Exam sim',bydomain:'By domain',drill:'Drill',imported:'Imported'};
+    const modeLabel={quick:'Quick',examsim:'Exam sim',bydomain:'By domain',drill:'Drill',tables:'Tables',imported:'Imported'};
     const counts={};h.forEach(a=>counts[a.mode]=(counts[a.mode]||0)+1);
     content.innerHTML=`<div class="viewhead"><h1>Analytics</h1><p class="muted">Your attempts over time, saved in this browser.</p></div>
       <div class="card panel"><h2>Attempt history</h2>
@@ -447,7 +614,7 @@ function initApp(QUESTIONS){
   }
 
   // boot
-  const VIEWS=['home','quick','examsim','bydomain','flashcards','analytics','profile'];
+  const VIEWS=['home','quick','examsim','bydomain','flashcards','tables','analytics','profile'];
   window.addEventListener('hashchange',()=>{const h=(location.hash||'').replace('#','');if(VIEWS.includes(h)&&h!==active){active=h;renderNav();route(h);window.scrollTo(0,0);}});
   renderNav();
   const hash=(location.hash||'').replace('#','');
