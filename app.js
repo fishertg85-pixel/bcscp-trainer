@@ -143,6 +143,7 @@ const TABLES = [
    ['Remove endotoxin from glassware',{a:'dry heat depyrogenation (≥250°C)',alts:['depyrogenation','dry heat','250'],fuzzy:true}],
    ['Pre-packaged heat-sensitive medical devices (mfr)',{a:'ethylene oxide (EtO) gas or gamma irradiation',alts:['eto','ethylene oxide','gamma','irradiation'],fuzzy:true}]]},
 ];
+
 function initApp(QUESTIONS){
   "use strict";
   const $=(s,r=document)=>r.querySelector(s);
@@ -166,7 +167,7 @@ function initApp(QUESTIONS){
     const setModeLabel=()=>{const b=$('#themeBtn');if(b)b.textContent=(document.documentElement.getAttribute('data-theme')==='light')?'Light':'Dark';};
     setModeLabel();
     $('#themeBtn').onclick=()=>{const cur=document.documentElement.getAttribute('data-theme')||'dark';const n=cur==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('csp_theme',n);}catch(e){}setModeLabel();};
-    const PALS=['','sage','warm'],PNAME={'':'Navy','sage':'Sage','warm':'Warm'};
+    const PALS=['','sage','warm','cobalt'],PNAME={'':'Navy','sage':'Sage','warm':'Warm','cobalt':'Cobalt'};
     let pal='';try{pal=localStorage.getItem('csp_palette')||'';}catch(e){}if(!PALS.includes(pal))pal='';
     const applyPal=()=>{if(pal)document.documentElement.setAttribute('data-palette',pal);else document.documentElement.removeAttribute('data-palette');const b=$('#paletteBtn');if(b)b.textContent=PNAME[pal];};
     applyPal();
@@ -620,6 +621,7 @@ function initApp(QUESTIONS){
   const hash=(location.hash||'').replace('#','');
   go(VIEWS.includes(hash)?hash:'home');
 }
+
 
 // Bootstrap: load questions.json then start the app.
 fetch('questions.json').then(r=>r.json()).then(Q=>{ try{ initApp(Q); }catch(e){ document.getElementById('content').innerHTML='<p style="padding:24px;color:#bf7b6f">App failed to start: '+e.message+'</p>'; } }).catch(e=>{ document.getElementById('content').innerHTML='<p style="padding:24px;color:#bf7b6f">Could not load questions.json: '+e.message+'</p>'; });
