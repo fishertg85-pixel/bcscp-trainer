@@ -71,7 +71,14 @@ function initApp(QUESTIONS){
 
   // theme
   (function(){let t=null;try{t=localStorage.getItem('csp_theme');}catch(e){}document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');
-    $('#themeBtn').onclick=()=>{const cur=document.documentElement.getAttribute('data-theme')||'dark';const n=cur==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('csp_theme',n);}catch(e){}};})();
+    const setModeLabel=()=>{const b=$('#themeBtn');if(b)b.textContent=(document.documentElement.getAttribute('data-theme')==='light')?'Light':'Dark';};
+    setModeLabel();
+    $('#themeBtn').onclick=()=>{const cur=document.documentElement.getAttribute('data-theme')||'dark';const n=cur==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('csp_theme',n);}catch(e){}setModeLabel();};
+    const PALS=['','sage','warm'],PNAME={'':'Navy','sage':'Sage','warm':'Warm'};
+    let pal='';try{pal=localStorage.getItem('csp_palette')||'';}catch(e){}if(!PALS.includes(pal))pal='';
+    const applyPal=()=>{if(pal)document.documentElement.setAttribute('data-palette',pal);else document.documentElement.removeAttribute('data-palette');const b=$('#paletteBtn');if(b)b.textContent=PNAME[pal];};
+    applyPal();
+    $('#paletteBtn').onclick=()=>{pal=PALS[(PALS.indexOf(pal)+1)%PALS.length];try{localStorage.setItem('csp_palette',pal);}catch(e){}applyPal();};})();
   // mobile drawer
   const drawer=open=>{sidebar.classList.toggle('open',open);$('#backdrop').classList.toggle('show',open);};
   $('#menuBtn').onclick=()=>drawer(!sidebar.classList.contains('open'));
