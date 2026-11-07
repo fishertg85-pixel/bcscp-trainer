@@ -224,26 +224,28 @@ function initApp(QUESTIONS){
   let S=null;
   function startQuiz(cfg){S=Object.assign({idx:0,records:[],startTime:Date.now(),qStart:0,timer:null},cfg);renderQuestion();}
   function liveStats(){
-    const recs=S.records;const correct=recs.filter(r=>r.correct).length;const wrong=recs.filter(r=>r.answer!=null&&!r.correct).length;const skip=recs.filter(r=>r.answer==null).length;const ans=correct+wrong;const acc=ans?Math.round(correct/ans*100):0;
+    const recs=S.records;const correct=recs.filter(r=>r.correct).length;const wrong=recs.filter(r=>r.answer!=null&&!r.correct).length;const skip=recs.filter(r=>r.answer==null).length;const ans=correct+wrong;const acc=ans?Math.round(correct/ans*100):0;const answered=recs.filter(r=>r.answer!=null).length;
+    const armed=S.endArm;
+    const endTile=`<button class="sbox endtile${armed?' arm':''}" id="endBtn" type="button"><div class="v">${armed?'Tap' : 'End'}</div><div class="k">${armed?'again to score':'& see results'}</div></button>`;
+    const bar=`<div class="progress" style="margin-top:10px"><i style="width:${S.idx/S.pool.length*100}%"></i></div>`;
     if(S.exam){
       const remain=S.deadline-Date.now();
       return `<div class="card panel"><div class="eyebrow">Time remaining</div><div class="timer-big ${remain<300000?'over':''}" id="examClock">${fmtH(remain)}</div></div>
-      <div class="card panel"><div class="eyebrow" style="margin-bottom:10px">Progress</div><div class="statgrid">
-        <div class="sbox accent"><div class="v">${S.idx+1}</div><div class="k">Current</div></div>
-        <div class="sbox"><div class="v">${S.pool.length}</div><div class="k">Total</div></div>
-        <div class="sbox"><div class="v">${recs.filter(r=>r.answer!=null).length}</div><div class="k">Answered</div></div>
-        <div class="sbox"><div class="v">${skip}</div><div class="k">Skipped</div></div></div>
-        <div class="progress"><i style="width:${S.idx/S.pool.length*100}%"></i></div></div>`;
+      <div class="card panel"><div class="eyebrow" style="margin-bottom:10px">Session</div><div class="statgrid">
+        <div class="sbox accent"><div class="v">${S.idx+1}/${S.pool.length}</div><div class="k">Progress</div></div>
+        <div class="sbox"><div class="v">${answered}</div><div class="k">Answered</div></div>
+        <div class="sbox"><div class="v">${skip}</div><div class="k">Skipped</div></div>
+        ${endTile}</div>${bar}</div>`;
     }
-    return `<div class="card panel"><div class="eyebrow" style="margin-bottom:10px">Progress</div>
-      <div class="progress" style="margin:0 0 12px"><i style="width:${S.idx/S.pool.length*100}%"></i></div>
-      <div style="font-size:.85rem;color:var(--muted)">${S.idx+1} of ${S.pool.length}</div></div>
-      <div class="card panel"><div class="eyebrow" style="margin-bottom:10px">Session stats</div><div class="statgrid">
+    return `<div class="card panel"><div class="eyebrow" style="margin-bottom:10px">Session</div><div class="statgrid">
+        <div class="sbox accent"><div class="v">${S.idx+1}/${S.pool.length}</div><div class="k">Progress</div></div>
         <div class="sbox good"><div class="v">${correct}</div><div class="k">Correct</div></div>
         <div class="sbox bad"><div class="v">${wrong}</div><div class="k">Wrong</div></div>
         <div class="sbox"><div class="v">${skip}</div><div class="k">Skipped</div></div>
-        <div class="sbox accent"><div class="v">${acc}%</div><div class="k">Accuracy</div></div></div></div>`;
+        <div class="sbox accent"><div class="v">${acc}%</div><div class="k">Accuracy</div></div>
+        ${endTile}</div>${bar}</div>`;
   }
+  function wireEnd(){const eb=$('#endBtn');if(!eb)return;eb.onclick=()=>{if(!S.endArm){S.endArm=true;refreshSide();clearTimeout(S.endTO);S.endTO=setTimeout(()=>{S.endArm=false;refreshSide();},3000);}else{S.endArm=false;clearTimeout(S.endTO);endQuiz();}};}
   function renderQuestion(){
     const q=S.pool[S.idx];
     const keys=['A','B','C','D'].filter(k=>q.opts[k]!=null);
@@ -265,20 +267,19 @@ function initApp(QUESTIONS){
             <button class="btn" id="nextBtn" type="button" disabled>${S.idx+1>=S.pool.length?'Finish':'Next'}</button>
           </div>
         </div></div>
-        <aside class="panel-side"><div id="sidePanel">${liveStats()}</div>
-          <button class="btn sec endbtn" id="endBtn" type="button">End quiz &amp; see results</button></aside>
+        <aside class="panel-side" id="sidePanel">${liveStats()}</aside>
       </div>`;
-    S.qStart=Date.now();S.answered=false;S.pendingAnswer=null;let endArm=false;
+    S.qStart=Date.now();S.answered=false;S.pendingAnswer=null;
     clearInterval(S.timer);
     S.timer=setInterval(()=>{ if(S.exam){const c=$('#examClock'); if(c){const r=S.deadline-Date.now();c.textContent=fmtH(r);c.classList.toggle('over',r<300000);if(r<=0){clearInterval(S.timer);advance(true);}}}},500);
     content.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(b.dataset.k));
     $('#skipBtn').onclick=()=>{if(!S.answered)record(null);advance();};
     $('#nextBtn').onclick=()=>advance();
     $('#prevBtn').onclick=()=>{if(S.idx>0){S.records.pop();S.idx--;renderQuestion();}};
-    $('#endBtn').onclick=()=>{const eb=$('#endBtn');if(!endArm){endArm=true;eb.textContent='Tap again to end & score';eb.classList.add('arm');setTimeout(()=>{endArm=false;const b=$('#endBtn');if(b){b.textContent='End quiz & see results';b.classList.remove('arm');}},3000);}else{endQuiz();}};
+    wireEnd();
   }
   function endQuiz(){clearInterval(S.timer);if(!S.answered&&S.pendingAnswer)record(S.pendingAnswer);finish();}
-  function refreshSide(){const sp=$('#sidePanel');if(sp)sp.innerHTML=liveStats();}
+  function refreshSide(){const sp=$('#sidePanel');if(sp){sp.innerHTML=liveStats();wireEnd();}}
   function choose(k){
     const q=S.pool[S.idx];
     content.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',String(o.dataset.k===k)));
