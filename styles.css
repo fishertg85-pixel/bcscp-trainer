@@ -216,12 +216,12 @@ td.c{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   .panel-side .eyebrow{display:none}
   .panel-side .progress{display:none}
   .panel-side .timer-big{font-size:1.15rem}
-  .statgrid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px}
-  .statgrid .sbox{padding:6px 2px;border-radius:7px}
-  .statgrid .sbox .v{font-size:.9rem}
-  .statgrid .sbox .k{font-size:.46rem;letter-spacing:.01em;margin-top:1px}
-  .statgrid .endtile .v{font-size:.74rem}
-  .statgrid .endtile .k{font-size:.44rem}
+  .statgrid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+  .statgrid .sbox{padding:9px 3px;border-radius:8px}
+  .statgrid .sbox .v{font-size:1.1rem}
+  .statgrid .sbox .k{font-size:.55rem;letter-spacing:.01em;margin-top:2px}
+  .statgrid .endtile .v{font-size:.9rem}
+  .statgrid .endtile .k{font-size:.5rem}
   .qcard{padding:16px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
