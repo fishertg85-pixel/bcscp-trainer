@@ -2,25 +2,25 @@
    contrast, section color-coding. Dark is the always-on default; softened light via toggle.
    Layout: app shell — top bar + left nav + content; a live stats panel sits right during a session. */
 :root{
-  --bg:#171b18; --surface:#1f251f; --surface-2:#282f29; --line:#343d36; --sidebar:#141813;
-  --fg:#c3ccc5; --muted:#8e9d93; --faint:#687a6f;
-  --accent:#4d9880; --accent-ink:#0c1511; --accent-soft:#1c3128;
-  --slate:#8d8ca2; --plum:#a3808e;
+  --bg:#171d24; --surface:#212a33; --surface-2:#2b3640; --line:#3a4652; --sidebar:#141a20;
+  --fg:#d3d9df; --muted:#95a0ab; --faint:#6a7883;
+  --accent:#d1913c; --accent-ink:#1b1206; --accent-soft:#312715;
+  --slate:#7f8ba0; --plum:#b08593;
   --c-a:#5aa58c; --c-b:#bf9f5f; --c-c:#6f95ac; --c-d:#a884a0; --c-e:#6fa174; --c-f:#9190a6; --c-g:#bf8274; --c-h:#b0936b; --c-i:#8a90bd; --c-j:#bd8a97; --c-k:#5fa9a0; --c-l:#9fae6a; --c-m:#a98fd0;
-  --good:#5aa883; --good-soft:#16302a; --warn:#bf9f5f; --warn-soft:#332c18; --bad:#bf7b6f; --bad-soft:#34211d;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 10px rgba(0,0,0,.26); color-scheme:dark;
+  --good:#5aa883; --good-soft:#15302a; --warn:#c7a65a; --warn-soft:#332d19; --bad:#cf7b6f; --bad-soft:#35221f;
+  --shadow:0 1px 2px rgba(0,0,0,.34),0 2px 12px rgba(0,0,0,.3); color-scheme:dark;
   --r:12px; --r-sm:8px;
   --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
 }
 :root[data-theme="light"]{
-  --bg:#dde2db; --surface:#e8ece5; --surface-2:#d3dacf; --line:#c0c9bd; --sidebar:#d2d8cd;
-  --fg:#28322b; --muted:#54625a; --faint:#788a7f;
-  --accent:#2f6d5b; --accent-ink:#f2f6f1; --accent-soft:#cfe0d8;
-  --slate:#5f5e72; --plum:#6d5560;
+  --bg:#e6e8ea; --surface:#f0f1f3; --surface-2:#d9dde1; --line:#c6ccd2; --sidebar:#d6dade;
+  --fg:#2a333c; --muted:#55606b; --faint:#7b8691;
+  --accent:#b06f14; --accent-ink:#fbf5ea; --accent-soft:#efe0c7;
+  --slate:#4f5a6e; --plum:#7a5560;
   --c-a:#2f7d64; --c-b:#876516; --c-c:#3f6a84; --c-d:#7a5676; --c-e:#3f7d4d; --c-f:#5f5e78; --c-g:#9a5443; --c-h:#7a5f2f; --c-i:#4c5280; --c-j:#8a5560; --c-k:#2f7d74; --c-l:#5f6b2a; --c-m:#5a4a86;
-  --good:#2e8a63; --good-soft:#d6ebe0; --warn:#876516; --warn-soft:#ecddbe; --bad:#a1503f; --bad-soft:#eed7d1;
-  --shadow:0 1px 2px rgba(20,40,30,.06),0 2px 10px rgba(20,40,30,.05); color-scheme:light;
+  --good:#2e8a63; --good-soft:#d6ebe0; --warn:#8a6a1a; --warn-soft:#ecddbe; --bad:#a1503f; --bad-soft:#eed7d1;
+  --shadow:0 1px 2px rgba(20,30,45,.08),0 2px 10px rgba(20,30,45,.06); color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
