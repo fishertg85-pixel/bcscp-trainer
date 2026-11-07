@@ -265,16 +265,19 @@ function initApp(QUESTIONS){
             <button class="btn" id="nextBtn" type="button" disabled>${S.idx+1>=S.pool.length?'Finish':'Next'}</button>
           </div>
         </div></div>
-        <aside class="panel-side" id="sidePanel">${liveStats()}</aside>
+        <aside class="panel-side"><div id="sidePanel">${liveStats()}</div>
+          <button class="btn sec endbtn" id="endBtn" type="button">End quiz &amp; see results</button></aside>
       </div>`;
-    S.qStart=Date.now();S.answered=false;S.pendingAnswer=null;
+    S.qStart=Date.now();S.answered=false;S.pendingAnswer=null;let endArm=false;
     clearInterval(S.timer);
     S.timer=setInterval(()=>{ if(S.exam){const c=$('#examClock'); if(c){const r=S.deadline-Date.now();c.textContent=fmtH(r);c.classList.toggle('over',r<300000);if(r<=0){clearInterval(S.timer);advance(true);}}}},500);
     content.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(b.dataset.k));
     $('#skipBtn').onclick=()=>{if(!S.answered)record(null);advance();};
     $('#nextBtn').onclick=()=>advance();
     $('#prevBtn').onclick=()=>{if(S.idx>0){S.records.pop();S.idx--;renderQuestion();}};
+    $('#endBtn').onclick=()=>{const eb=$('#endBtn');if(!endArm){endArm=true;eb.textContent='Tap again to end & score';eb.classList.add('arm');setTimeout(()=>{endArm=false;const b=$('#endBtn');if(b){b.textContent='End quiz & see results';b.classList.remove('arm');}},3000);}else{endQuiz();}};
   }
+  function endQuiz(){clearInterval(S.timer);if(!S.answered&&S.pendingAnswer)record(S.pendingAnswer);finish();}
   function refreshSide(){const sp=$('#sidePanel');if(sp)sp.innerHTML=liveStats();}
   function choose(k){
     const q=S.pool[S.idx];
