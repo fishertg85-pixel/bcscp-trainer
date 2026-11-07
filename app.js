@@ -58,7 +58,9 @@ function initApp(QUESTIONS){
   const SECS=['A','B','C','D','E','F','G','H','I','J','K','L','M'];
   const SECNAME={}; QUESTIONS.forEach(q=>SECNAME[q.sec]=q.secName);
   const DOMAIN={A:1,B:1,C:1,D:1,E:1,F:1,G:1,H:3,I:3,J:2,K:3,L:1,M:1};
-  const DOMNAME={1:'Domain 1 — Compounded Sterile Preparations',2:'Domain 2 — Therapeutics',3:'Domain 3 — Professional Practice'};
+  const DOMNAME={1:'Domain 1 — Compounded Sterile Preparations',2:'Domain 2 — Therapeutics and Patient Management',3:'Domain 3 — Professional Practice'};
+  const DOMPCT={1:60,2:15,3:25};
+  const domSecs=d=>SECS.filter(s=>DOMAIN[s]===d);
   const LS_KEY='csp_trainer_history_v1';
   const fmt=ms=>{const s=Math.max(0,Math.round(ms/1000));const m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');};
   const fmtH=ms=>{let s=Math.max(0,Math.round(ms/1000));const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);return (h>0?h+':':'')+String(m).padStart(h>0?2:1,'0')+':'+String(s%60).padStart(2,'0');};
@@ -164,12 +166,18 @@ function initApp(QUESTIONS){
 
   function viewByDomain(){
     active='bydomain';renderNav();
+    const domChips=[1,2,3].map(d=>`<button class="chip" data-dom="${d}" aria-pressed="false" type="button">Domain ${d} · ${esc(DOMNAME[d].split('— ')[1])} <small class="muted">(${QUESTIONS.filter(q=>DOMAIN[q.sec]===d).length} Q)</small></button>`).join('');
     const chips=SECS.map(s=>`<button class="chip" data-sec="${s}" aria-pressed="false" type="button"><span class="secdot" style="background:var(--c-${s.toLowerCase()})"></span>${s} · ${SECNAME[s]}</button>`).join('');
-    content.innerHTML=`<div class="viewhead"><h1>By domain</h1><p class="muted">Pick one or more topic areas.</p></div>
-      <div class="card panel" style="max-width:640px"><div class="field"><label>Sections</label><div class="chips" id="secChips">${chips}</div></div>
+    content.innerHTML=`<div class="viewhead"><h1>By domain</h1><p class="muted">Pick whole exam domains, or drill individual topic areas.</p></div>
+      <div class="card panel" style="max-width:660px">
+      <div class="field"><label>Exam domains</label><div class="chips" id="domChips">${domChips}</div><div class="hint">Selecting a domain checks all of its topic areas below.</div></div>
+      <div class="field"><label>Topic areas</label><div class="chips" id="secChips">${chips}</div></div>
       ${fbField()}${paceField(90)}<button class="btn" id="startBtn" type="button">Start</button></div>`;
     const chosen=new Set();let fb='exam';
-    content.querySelectorAll('#secChips .chip').forEach(c=>c.onclick=()=>{const s=c.dataset.sec,on=c.getAttribute('aria-pressed')==='true';c.setAttribute('aria-pressed',String(!on));on?chosen.delete(s):chosen.add(s);});
+    const syncSec=()=>content.querySelectorAll('#secChips .chip').forEach(c=>c.setAttribute('aria-pressed',String(chosen.has(c.dataset.sec))));
+    const syncDom=()=>content.querySelectorAll('#domChips .chip').forEach(c=>{const d=+c.dataset.dom;c.setAttribute('aria-pressed',String(domSecs(d).length>0&&domSecs(d).every(s=>chosen.has(s))));});
+    content.querySelectorAll('#secChips .chip').forEach(c=>c.onclick=()=>{const s=c.dataset.sec;chosen.has(s)?chosen.delete(s):chosen.add(s);syncSec();syncDom();});
+    content.querySelectorAll('#domChips .chip').forEach(c=>c.onclick=()=>{const d=+c.dataset.dom,secs=domSecs(d),all=secs.every(s=>chosen.has(s));secs.forEach(s=>all?chosen.delete(s):chosen.add(s));syncSec();syncDom();});
     content.querySelectorAll('#fbChips .chip').forEach(c=>c.onclick=()=>{content.querySelectorAll('#fbChips .chip').forEach(x=>x.setAttribute('aria-pressed','false'));c.setAttribute('aria-pressed','true');fb=c.dataset.fb;});
     wirePace();
     $('#startBtn').onclick=()=>{const secs=chosen.size?chosen:new Set(SECS);const pool=shuffleGroups(QUESTIONS.filter(q=>secs.has(q.sec)));startQuiz({pool,fb,target:getPace(),mode:'bydomain'});};
@@ -177,23 +185,39 @@ function initApp(QUESTIONS){
 
   function viewExamSim(){
     active='examsim';renderNav();
+    EXAM_SETS=buildExamSets(150);
     content.innerHTML=`<div class="viewhead"><h1>Exam simulation</h1><p class="muted">The real conditions.</p></div>
-      <div class="card panel" style="max-width:620px">
-        <p>A <strong>150-item</strong> timed mock with a <strong>3 h 45 m</strong> countdown, sampled toward the real blueprint weighting (Domain 1 60% / Domain 2 15% / Domain 3 25%). No feedback until the end, then a score, per-domain breakdown, pace, and a readiness verdict.</p>
-        <p class="hint">Note: the bank is Domain-1 heavy, so Domain 2 is thinner than 15% — the mix approximates the blueprint. The scaled-score figure is a rough estimate, not an official BPS score.</p>
-        <div class="row" style="margin-top:14px"><button class="btn" id="startBtn" type="button">Begin 150-item mock</button>
-        <button class="btn sec" id="startBtn2" type="button">Short mock (50)</button></div>
+      <div class="card panel" style="max-width:640px">
+        <p>A <strong>150-item</strong> timed mock with a <strong>3 h 45 m</strong> countdown, weighted to the official BCSCP blueprint (Domain 1 <strong>60%</strong> / Domain 2 <strong>15%</strong> / Domain 3 <strong>25%</strong> → ~90 / 23 / 38 items). No feedback until the end, then a score, per-domain breakdown, pace, and a readiness verdict.</p>
+        <p class="hint">Three full sets draw non-overlapping questions from the bank, so you can take three distinct practice exams. The scaled-score figure is a rough estimate, not an official BPS score.</p>
+        <div class="field" style="margin-top:14px"><label>Full 150-item exam</label><div class="row">
+          <button class="btn" data-set="0" type="button">Full exam · Set 1</button>
+          <button class="btn" data-set="1" type="button">Set 2</button>
+          <button class="btn" data-set="2" type="button">Set 3</button></div></div>
+        <div class="row"><button class="btn sec" id="randBtn" type="button">Random 150</button>
+        <button class="btn sec" id="shortBtn" type="button">Short mock (50)</button></div>
       </div>`;
-    $('#startBtn').onclick=()=>startExam(150);
-    $('#startBtn2').onclick=()=>startExam(50);
+    content.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>startExamSet(+b.dataset.set));
+    $('#randBtn').onclick=()=>startExam(150);
+    $('#shortBtn').onclick=()=>startExam(50);
   }
+  function examTargets(n){return {1:Math.round(n*0.6),2:Math.round(n*0.15),3:Math.round(n*0.25)};}
   function buildExamPool(nTarget){
     const byDom={1:[],2:[],3:[]};QUESTIONS.forEach(q=>byDom[DOMAIN[q.sec]||1].push(q));
-    const tg={1:Math.round(nTarget*0.6),2:Math.round(nTarget*0.15),3:Math.round(nTarget*0.25)};
+    const tg=examTargets(nTarget);
     let pool=[];[1,2,3].forEach(d=>{pool=pool.concat(shuffle(byDom[d].slice()).slice(0,tg[d]));});
     if(pool.length<nTarget){const used=new Set(pool.map(q=>q.n));pool=pool.concat(shuffle(QUESTIONS.filter(q=>!used.has(q.n))).slice(0,nTarget-pool.length));}
     return shuffleGroups(pool).slice(0,nTarget);
   }
+  let EXAM_SETS=null;
+  function buildExamSets(nTarget){
+    const byDom={1:[],2:[],3:[]};QUESTIONS.forEach(q=>byDom[DOMAIN[q.sec]||1].push(q));
+    const sh={1:shuffle(byDom[1].slice()),2:shuffle(byDom[2].slice()),3:shuffle(byDom[3].slice())};
+    const tg=examTargets(nTarget);const sets=[[],[],[]];
+    for(let k=0;k<3;k++){[1,2,3].forEach(d=>{const start=k*tg[d];let chunk=sh[d].slice(start,start+tg[d]);if(chunk.length<tg[d])chunk=chunk.concat(sh[d].slice(0,tg[d]-chunk.length));sets[k]=sets[k].concat(chunk);});sets[k]=shuffleGroups(sets[k]).slice(0,nTarget);}
+    return sets;
+  }
+  function startExamSet(k){if(!EXAM_SETS)EXAM_SETS=buildExamSets(150);const pool=EXAM_SETS[k].slice();startQuiz({pool,fb:'exam',target:90,mode:'examsim',exam:true,deadline:Date.now()+225*60000,setLabel:'Set '+(k+1)});}
   function startExam(n){const pool=buildExamPool(n);const mins=n===150?225:75;startQuiz({pool,fb:'exam',target:90,mode:'examsim',exam:true,deadline:Date.now()+mins*60000});}
 
   // ---------- QUIZ ENGINE ----------
